@@ -35,18 +35,15 @@ variable "app_name" {
 variable "db_name" {
   description = "Nombre de la base de datos"
   type        = string
-  default     = "pocdb"
 }
 
 variable "db_username" {
   description = "Usuario maestro de la base de datos"
   type        = string
-  default     = "postgres"
 }
 
 variable "db_password" {
   description = "Contraseña maestra de la base de datos"
   type        = string
   sensitive   = true
-  default     = "PocPassword2024!"
 }
