@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { PostDto } from './postDto';
 
 let posts: PostDto[] = [
