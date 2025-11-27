@@ -36,6 +36,28 @@ resource "aws_ecs_task_definition" "app" {
           hostPort      = 3000
         }
       ]
+      environment = [
+        {
+          name  = "DB_HOST"
+          value = aws_db_instance.postgres.address
+        },
+        {
+          name  = "DB_PORT"
+          value = tostring(aws_db_instance.postgres.port)
+        },
+        {
+          name  = "DB_USERNAME"
+          value = var.db_username
+        },
+        {
+          name  = "DB_PASSWORD"
+          value = var.db_password
+        },
+        {
+          name  = "DB_NAME"
+          value = var.db_name
+        }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
