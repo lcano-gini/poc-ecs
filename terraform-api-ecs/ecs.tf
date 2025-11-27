@@ -56,6 +56,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "DB_NAME"
           value = var.db_name
+        },
+        {
+          name  = "RUN_MIGRATIONS"
+          value = "true"
         }
       ]
       logConfiguration = {
