@@ -1,0 +1,5 @@
+project_name = "ums-app"
+main_app_name = "ums-app"
+db_name     = "umsdb"
+db_username = "postgres"
+db_password = "UmsPassword2025!"

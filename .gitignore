@@ -56,14 +56,26 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Terraform
-terraform-api-ecs/.terraform
-terraform-api-ecs/.terraform.lock.hcl
-terraform-api-ecs/terraform.tfstate
-terraform-api-ecs/terraform.tfstate.backup
-terraform-api-ecs/terraform.tfvars
-terraform-api-ecs/terraform.tfvars.backup
-terraform-api-ecs/terraform.tfvars.backup.backup
-terraform-api-ecs/terraform.tfvars.backup.backup.backup
-terraform-api-ecs/terraform.tfvars.backup.backup.backup.backup
-terraform-api-ecs/terraform.tfvars.backup.backup.backup.backup.backup
-terraform-api-ecs/.terraform.tfstate.lock.info
+terraform/apps-infra/.terraform
+terraform/apps-infra/.terraform.lock.hcl
+terraform/apps-infra/terraform.tfstate
+terraform/apps-infra/terraform.tfstate.backup
+terraform/apps-infra/terraform.tfvars
+terraform/apps-infra/terraform.tfvars.backup
+terraform/apps-infra/terraform.tfvars.backup.backup
+terraform/apps-infra/terraform.tfvars.backup.backup.backup
+terraform/apps-infra/terraform.tfvars.backup.backup.backup.backup
+terraform/apps-infra/terraform.tfvars.backup.backup.backup.backup.backup
+terraform/apps-infra/.terraform.tfstate.lock.info
+
+terraform/general/.terraform
+terraform/general/.terraform.lock.hcl
+terraform/general/terraform.tfstate
+terraform/general/terraform.tfstate.backup
+terraform/general/terraform.tfvars
+terraform/general/terraform.tfvars.backup
+terraform/general/terraform.tfvars.backup.backup
+terraform/general/terraform.tfvars.backup.backup.backup
+terraform/general/terraform.tfvars.backup.backup.backup.backup
+terraform/general/terraform.tfvars.backup.backup.backup.backup.backup
+terraform/general/.terraform.tfstate.lock.info

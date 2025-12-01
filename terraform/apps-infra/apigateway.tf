@@ -6,7 +6,7 @@
 # Resource: aws_apigatewayv2_api
 # Crea una API HTTP (más rápida y barata que REST API).
 resource "aws_apigatewayv2_api" "main" {
-  name          = "${var.app_name}-gateway"
+  name          = "${local.name}-gateway"
   protocol_type = "HTTP"
 }
 
@@ -36,7 +36,7 @@ resource "aws_apigatewayv2_stage" "default" {
 }
 
 resource "aws_cloudwatch_log_group" "api_gw" {
-  name              = "/aws/api-gateway/${var.app_name}"
+  name              = "/aws/api-gateway/${local.name}"
   retention_in_days = 7
 }
 

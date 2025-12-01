@@ -6,7 +6,7 @@
 # Resource: aws_security_group (ALB)
 # Controla el tráfico permitido hacia y desde el Application Load Balancer.
 resource "aws_security_group" "alb_sg" {
-  name        = "${var.app_name}-alb-sg"
+  name        = "${local.name}-alb-sg"
   description = "Allow HTTP traffic"
   vpc_id      = aws_vpc.main.id
 
@@ -31,7 +31,7 @@ resource "aws_security_group" "alb_sg" {
 # Controla el tráfico hacia los contenedores (tareas) de ECS.
 # Implementa el principio de "mínimo privilegio" permitiendo solo tráfico desde el ALB.
 resource "aws_security_group" "ecs_sg" {
-  name        = "${var.app_name}-ecs-sg"
+  name        = "${local.name}-ecs-sg"
   description = "Allow traffic from ALB"
   vpc_id      = aws_vpc.main.id
 
@@ -57,7 +57,7 @@ resource "aws_security_group" "ecs_sg" {
 # Controla el tráfico hacia la base de datos.
 # Permite tráfico únicamente desde el grupo de seguridad de ECS.
 resource "aws_security_group" "rds_sg" {
-  name        = "${var.app_name}-rds-sg"
+  name        = "${local.name}-rds-sg"
   description = "Allow PostgreSQL traffic from ECS"
   vpc_id      = aws_vpc.main.id
 

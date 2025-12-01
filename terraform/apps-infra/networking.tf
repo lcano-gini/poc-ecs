@@ -12,7 +12,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true # Habilita resolución DNS en la VPC
 
   tags = {
-    Name = "${var.app_name}-vpc"
+    Name = "${local.name}-vpc"
   }
 }
 
@@ -23,7 +23,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.app_name}-igw"
+    Name = "${local.name}-igw"
   }
 }
 
@@ -38,7 +38,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true # Asigna IP pública automáticamente a recursos lanzados aquí
 
   tags = {
-    Name = "${var.app_name}-public-${count.index + 1}"
+    Name = "${local.name}-public-${count.index + 1}"
   }
 }
 
@@ -54,7 +54,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.app_name}-rt-public"
+    Name = "${local.name}-rt-public"
   }
 }
 

@@ -7,7 +7,7 @@
 # Crea el balanceador de carga de aplicación (Capa 7).
 # Recibe el tráfico externo y lo distribuye.
 resource "aws_lb" "main" {
-  name               = "${var.app_name}-alb"
+  name               = "${local.name}-alb"
   internal           = false                   # false = accesible desde internet
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
@@ -18,7 +18,7 @@ resource "aws_lb" "main" {
 # Grupo de destino donde el ALB enviará las peticiones.
 # Los contenedores ECS se registrarán automáticamente aquí.
 resource "aws_lb_target_group" "app" {
-  name        = "${var.app_name}-tg"
+  name        = "${local.name}-tg"
   port        = 3000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id

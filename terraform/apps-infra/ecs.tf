@@ -6,7 +6,7 @@
 # Resource: aws_ecs_cluster
 # El clúster lógico que agrupa los servicios y tareas.
 resource "aws_ecs_cluster" "main" {
-  name = "${var.app_name}-cluster"
+  name = "${local.name}-cluster"
 
   setting {
     name  = "containerInsights"
@@ -17,7 +17,7 @@ resource "aws_ecs_cluster" "main" {
 # Resource: aws_ecs_task_definition
 # La "receta" para correr el contenedor. Define CPU, RAM, Imagen, Puertos, etc.
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.app_name}-task"
+  family                   = "${local.name}-task"
   network_mode             = "awsvpc" # Requerido para Fargate
   requires_compatibilities = ["FARGATE"]
   cpu                      = 256 # .25 vCPU
@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "app" {
   # Definición del contenedor en formato JSON
   container_definitions = jsonencode([
     {
-      name      = var.app_name
+      name      = local.name
       image     = "${aws_ecr_repository.app.repository_url}:latest"
       essential = true
       portMappings = [
@@ -60,12 +60,32 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "RUN_MIGRATIONS"
           value = "true"
+        },
+        {
+          name  = "S3_BUCKET_NAME"
+          value = var.general_s3_bucket_name
+        },
+        {
+          name  = "DYNAMODB_TABLE_NAME"
+          value = var.general_dynamodb_table_name
+        },
+        {
+          name  = "COGNITO_USER_POOL_ID"
+          value = var.general_cognito_user_pool_id
+        },
+        {
+          name  = "COGNITO_CLIENT_ID"
+          value = var.general_cognito_client_id
+        },
+        {
+          name  = "COGNITO_ISSUER_URL"
+          value = var.general_cognito_issuer_url
         }
       ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "/ecs/${var.app_name}"
+          awslogs-group         = "/ecs/${local.name}"
           awslogs-region        = var.aws_region
           awslogs-stream-prefix = "ecs"
           awslogs-create-group  = "true"
@@ -78,10 +98,10 @@ resource "aws_ecs_task_definition" "app" {
 # Resource: aws_ecs_service
 # Mantiene la aplicación corriendo. Asegura que siempre haya X copias (desired_count) de la tarea.
 resource "aws_ecs_service" "main" {
-  name            = "${var.app_name}-service"
+  name            = "${local.name}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 1         # Número de réplicas
+  desired_count   = 1         # Número inicial de réplicas. 
   launch_type     = "FARGATE" # Serverless compute engine
 
   # Configuración de red para las tareas
@@ -94,17 +114,66 @@ resource "aws_ecs_service" "main" {
   # Conexión con el Load Balancer
   load_balancer {
     target_group_arn = aws_lb_target_group.app.arn
-    container_name   = var.app_name
+    container_name   = local.name
     container_port   = 3000
+  }
+
+  # Ignorar desired_count para evitar conflictos con AutoScaling
+  lifecycle {
+    ignore_changes = [desired_count]
   }
 
   depends_on = [aws_lb_listener.front_end] # Espera a que el ALB esté listo
 }
 
+# Resource: aws_appautoscaling_target
+# Define el objetivo de escalado (el servicio ECS) y sus límites (min/max).
+resource "aws_appautoscaling_target" "ecs_target" {
+  max_capacity       = 10
+  min_capacity       = 1
+  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+# Resource: aws_appautoscaling_policy (CPU)
+# Política de escalado basada en uso de CPU. Mantiene el CPU promedio al 70%.
+resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
+  name               = "${local.name}-cpu-autoscaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value = 70.0
+  }
+}
+
+# Resource: aws_appautoscaling_policy (Memory)
+# Política de escalado basada en uso de Memoria. Mantiene la RAM promedio al 70%.
+resource "aws_appautoscaling_policy" "ecs_policy_memory" {
+  name               = "${local.name}-memory-autoscaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value = 70.0
+  }
+}
+
 # Resource: aws_iam_role
 # Rol de IAM que permite al agente de ECS ejecutar acciones en tu nombre (pull image, logs).
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.app_name}-ecs-task-execution-role"
+  name = "${local.name}-ecs-task-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -130,6 +199,6 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 # Resource: aws_cloudwatch_log_group
 # Grupo de logs en CloudWatch para centralizar la salida estándar (stdout/stderr) de los contenedores.
 resource "aws_cloudwatch_log_group" "ecs_logs" {
-  name              = "/ecs/${var.app_name}"
+  name              = "/ecs/${local.name}"
   retention_in_days = 7
 }

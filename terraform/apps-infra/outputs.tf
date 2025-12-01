@@ -27,3 +27,8 @@ output "rds_db_name" {
   description = "Nombre de la base de datos creada"
   value       = aws_db_instance.postgres.db_name
 }
+
+output "cloudfront_domain_name" {
+  description = "Nombre de dominio de la distribución de CloudFront"
+  value       = aws_cloudfront_distribution.main.domain_name
+}
