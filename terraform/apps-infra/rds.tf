@@ -32,7 +32,8 @@ resource "aws_db_instance" "postgres" {
   parameter_group_name = "default.postgres16"
   skip_final_snapshot  = true          # No crear snapshot al destruir (para PoCs)
   publicly_accessible  = false         # No accesible desde internet directamente
-  
+  apply_immediately    = true          # Aplicar cambios inmediatamente
+
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
 
