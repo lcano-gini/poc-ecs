@@ -35,11 +35,11 @@ resource "aws_security_group" "ecs_sg" {
   description = "Allow traffic from ALB"
   vpc_id      = aws_vpc.main.id
 
-  # Ingress: Permite tráfico en el puerto de la app (3000) SOLO si viene del ALB SG.
+  # Ingress: Permite tráfico en el puerto de la app (4000) SOLO si viene del ALB SG.
   # Esto evita que alguien acceda directo a los contenedores saltándose el balanceador.
   ingress {
-    from_port       = 3000
-    to_port         = 3000
+    from_port       = 4000
+    to_port         = 4000
     protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
