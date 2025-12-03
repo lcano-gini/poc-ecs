@@ -18,20 +18,24 @@ resource "aws_lb" "main" {
 # Grupo de destino donde el ALB enviará las peticiones.
 # Los contenedores ECS se registrarán automáticamente aquí.
 resource "aws_lb_target_group" "app" {
-  name        = "${local.name}-tg"
-  port        = 3000
+  # name        = "${local.name}-tg" # Removed to allow zero-downtime replacement
+  port        = 4000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip" # Requerido para Fargate (modo awsvpc)
 
   # Health Check: El ALB verifica constantemente que la app responda.
   health_check {
-    path                = "/"
+    path                = "/api/v1/health"
     healthy_threshold   = 2   # Número de checks exitosos para considerar "sano"
     unhealthy_threshold = 10  # Número de fallos para considerar "no sano"
     timeout             = 60
     interval            = 300
     matcher             = "200,404" # Códigos HTTP aceptados como éxito
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
