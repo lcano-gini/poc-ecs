@@ -24,12 +24,18 @@ variable "environment" {
 variable "project_name" {
   description = "Nombre del proyecto para etiquetado de recursos"
   type        = string
-  default     = "poc-api"
+  default     = "gini-apps"
 }
 
 variable "main_app_name" {
   description = "Nombre de la aplicación, usado como prefijo para nombrar recursos"
-  default     = "poc-api"
+  default     = "gini-apps"
+}
+
+variable "image_tag" {
+  description = "Tag de la imagen Docker a desplegar"
+  type        = string
+  default     = "latest"
 }
 
 variable "db_name" {
@@ -46,6 +52,30 @@ variable "db_password" {
   description = "Contraseña maestra de la base de datos"
   type        = string
   sensitive   = true
+}
+
+variable "jwt_secret" {
+  description = "Secret for JWT signing"
+  type        = string
+  default     = "secretKey123" 
+}
+
+variable "jwt_refresh_secret" {
+  description = "Secret for JWT Refresh signing"
+  type        = string
+  default     = "refreshSecretKey123"
+}
+
+variable "ses_from_email" {
+  description = "Email remitente para SES"
+  type        = string
+  default     = "noreply@example.com"
+}
+
+variable "ses_from_name" {
+  description = "Nombre remitente para SES"
+  type        = string
+  default     = "UMS App"
 }
 
 # Variables opcionales para conexión con infraestructura general
@@ -70,6 +100,18 @@ variable "general_cognito_user_pool_id" {
 
 variable "general_cognito_client_id" {
   description = "ID del Cliente de Cognito (opcional)"
+  type        = string
+  default     = ""
+}
+
+variable "user_pool_arn" {
+  description = "ARN del User Pool de Cognito"
+  type        = string
+  default     = ""
+}
+
+variable "admins_client_id" {
+  description = "ID del Cliente de Cognito para Admins"
   type        = string
   default     = ""
 }
