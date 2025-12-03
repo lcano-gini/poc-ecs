@@ -79,3 +79,13 @@ terraform/general/terraform.tfvars.backup.backup.backup
 terraform/general/terraform.tfvars.backup.backup.backup.backup
 terraform/general/terraform.tfvars.backup.backup.backup.backup.backup
 terraform/general/.terraform.tfstate.lock.info
+
+**/.terraform/
+**/.terraform.tfstate*
+**/terraform.tfstate*
+**/terraform.tfstate.d/
+terraform/apps-infra/workspaces/data-collect.tfvars
+
+terraform/apps-infra/workspaces/poc-api.tfvars
+
+*.tfvars
