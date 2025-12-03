@@ -3,8 +3,7 @@ resource "random_id" "suffix" {
 }
 
 locals {
-  # Generates a dynamic name like "poc-api-a1b2c3d4"
-  # Used to avoid naming conflicts
+  # Generates a dynamic name like "gini-apps-a1b2c3d4"
   name = "${var.main_app_name}-${random_id.suffix.hex}"
 }
 
