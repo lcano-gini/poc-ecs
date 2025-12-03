@@ -28,15 +28,27 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name      = local.name
-      image     = "${aws_ecr_repository.app.repository_url}:latest"
+      image     = "${aws_ecr_repository.app.repository_url}:${var.image_tag}"
       essential = true
       portMappings = [
         {
-          containerPort = 3000
-          hostPort      = 3000
+          containerPort = 4000
+          hostPort      = 4000
         }
       ]
       environment = [
+        {
+          name  = "ENVIRONMENT"
+          value = var.environment
+        },
+        {
+          name  = "REGION"
+          value = var.aws_region
+        },
+        {
+          name  = "AWS_REGION"
+          value = var.aws_region
+        },
         {
           name  = "DB_HOST"
           value = aws_db_instance.postgres.address
@@ -46,11 +58,11 @@ resource "aws_ecs_task_definition" "app" {
           value = tostring(aws_db_instance.postgres.port)
         },
         {
-          name  = "DB_USERNAME"
+          name  = "DB_USER"
           value = var.db_username
         },
         {
-          name  = "DB_PASSWORD"
+          name  = "DB_PASS"
           value = var.db_password
         },
         {
@@ -58,28 +70,52 @@ resource "aws_ecs_task_definition" "app" {
           value = var.db_name
         },
         {
+          name  = "DB_SSL"
+          value = "true"
+        },
+        {
+          name  = "JWT_SECRET"
+          value = var.jwt_secret
+        },
+        {
+          name  = "JWT_EXPIRES_IN"
+          value = "15m"
+        },
+        {
+          name  = "JWT_REFRESH_SECRET"
+          value = var.jwt_refresh_secret
+        },
+        {
+          name  = "JWT_REFRESH_EXPIRES_IN"
+          value = "7d"
+        },
+        {
+          name  = "USER_POOL_ID"
+          value = var.general_cognito_user_pool_id
+        },
+        {
+          name  = "USER_POOL_ARN"
+          value = var.user_pool_arn
+        },
+        {
+          name  = "APP_CLIENT_ID"
+          value = var.general_cognito_client_id
+        },
+        {
+          name  = "ADMINS_CLIENT_ID"
+          value = var.admins_client_id
+        },
+        {
           name  = "RUN_MIGRATIONS"
           value = "true"
         },
         {
-          name  = "S3_BUCKET_NAME"
-          value = var.general_s3_bucket_name
+          name  = "SES_FROM_EMAIL"
+          value = var.ses_from_email
         },
         {
-          name  = "DYNAMODB_TABLE_NAME"
-          value = var.general_dynamodb_table_name
-        },
-        {
-          name  = "COGNITO_USER_POOL_ID"
-          value = var.general_cognito_user_pool_id
-        },
-        {
-          name  = "COGNITO_CLIENT_ID"
-          value = var.general_cognito_client_id
-        },
-        {
-          name  = "COGNITO_ISSUER_URL"
-          value = var.general_cognito_issuer_url
+          name  = "SES_FROM_NAME"
+          value = var.ses_from_name
         }
       ]
       logConfiguration = {
@@ -91,6 +127,7 @@ resource "aws_ecs_task_definition" "app" {
           awslogs-create-group  = "true"
         }
       }
+      command = ["sh", "-c", "if [ \"$RUN_MIGRATIONS\" = \"true\" ]; then npm run migration:run; fi && npm run start:prod"]
     }
   ])
 }
@@ -103,6 +140,7 @@ resource "aws_ecs_service" "main" {
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 1         # Número inicial de réplicas. 
   launch_type     = "FARGATE" # Serverless compute engine
+  force_new_deployment = true # Forzar el despliegue de la nueva tarea con la última task disponible
 
   # Configuración de red para las tareas
   network_configuration {
@@ -115,7 +153,7 @@ resource "aws_ecs_service" "main" {
   load_balancer {
     target_group_arn = aws_lb_target_group.app.arn
     container_name   = local.name
-    container_port   = 3000
+    container_port   = 4000
   }
 
   # Ignorar desired_count para evitar conflictos con AutoScaling
